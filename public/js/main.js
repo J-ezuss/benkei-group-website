@@ -1,14 +1,30 @@
+// =====================
+// MOBILE NAV
+// =====================
 const menuBtn = document.getElementById('menuBtn');
 const mobileNav = document.getElementById('mobileNav');
 
 if (menuBtn && mobileNav) {
   menuBtn.addEventListener('click', () => {
     mobileNav.classList.toggle('show');
+    document.body.classList.toggle('menu-open');
+  });
+
+  const mobileLinks = document.querySelectorAll('.mobile-nav a');
+
+  mobileLinks.forEach((link) => {
+    link.addEventListener('click', () => {
+      mobileNav.classList.remove('show');
+      document.body.classList.remove('menu-open');
+    });
   });
 }
 
-async function loadGallery(id) {
-  const grid = document.getElementById(id);
+// =====================
+// GALLERY LOADER
+// =====================
+async function loadGallery() {
+  const grid = document.getElementById('galleryGrid');
   if (!grid) return;
 
   try {
@@ -18,61 +34,71 @@ async function loadGallery(id) {
     grid.innerHTML = images
       .map(
         (img) => `
-      <div class="card">
-        <img src="${img.src}" alt="${img.alt}" />
-        <div class="caption">${img.alt}</div>
-      </div>
-    `,
+          <div class="card">
+            <img src="${img.src}" alt="${img.alt}" />
+            <div class="caption">${img.alt}</div>
+          </div>
+        `,
       )
       .join('');
-  } catch {
+  } catch (err) {
+    console.error('Gallery failed to load:', err);
     grid.innerHTML = '<p>Gallery could not load.</p>';
   }
 }
 
-async function loadFeatured() {
+// =====================
+// FEATURED IMAGES (HOME)
+// =====================
+function loadFeatured() {
   const grid = document.getElementById('featuredGrid');
   if (!grid) return;
 
   const featured = [
-    { src: '/images/hero3.jpeg', alt: 'Featured Sushi' },
-    { src: '/images/feature-8.jpeg', alt: 'Signature sushi plate' },
-    { src: '/images/feature-2.jpeg', alt: 'Fresh sushi platter' },
+    { src: '/images/feature-1.jpeg', alt: 'Luxury Sushi Catering' },
+    { src: '/images/feature-2.jpeg', alt: 'Private Event Setup' },
+    { src: '/images/feature-3.jpeg', alt: 'Chef Plated Sushi' },
   ];
 
   grid.innerHTML = featured
     .map(
       (img) => `
-    <div class="card">
-      <img src="${img.src}" alt="${img.alt}" />
-      <div class="caption">${img.alt}</div>
-    </div>
-  `,
+        <div class="card">
+          <img src="${img.src}" alt="${img.alt}" />
+          <div class="caption">${img.alt}</div>
+        </div>
+      `,
     )
     .join('');
 }
 
-async function loadInstagramStyle() {
+// =====================
+// INSTAGRAM STYLE GRID
+// =====================
+function loadInstagram() {
   const grid = document.getElementById('instagramGrid');
   if (!grid) return;
 
   const photos = [
-    { src: '/images/feature-1.jpeg', alt: 'Recent sushi photo 1' },
-    { src: '/images/feature-2.jpeg', alt: 'Recent sushi photo 2' },
-    { src: '/images/feature-3.jpeg', alt: 'Recent sushi photo 3' },
+    { src: '/images/feature-1.jpeg' },
+    { src: '/images/feature-2.jpeg' },
+    { src: '/images/feature-3.jpeg' },
   ];
 
   grid.innerHTML = photos
     .map(
       (img) => `
-    <div class="card">
-      <img src="${img.src}" alt="${img.alt}" />
-    </div>
-  `,
+        <div class="card">
+          <img src="${img.src}" alt="Instagram photo" />
+        </div>
+      `,
     )
     .join('');
 }
 
+// =====================
+// REVIEWS SLIDER
+// =====================
 const reviewsTrack = document.getElementById('reviewsTrack');
 const reviewsPrev = document.getElementById('reviewsPrev');
 const reviewsNext = document.getElementById('reviewsNext');
@@ -87,10 +113,12 @@ if (reviewsTrack) {
     return 3;
   }
 
-  function updateReviewsSlider() {
-    const cardsPerView = getCardsPerView();
+  function updateSlider() {
+    if (cards.length === 0) return;
+
     const gap = 20;
     const cardWidth = cards[0].getBoundingClientRect().width + gap;
+    const cardsPerView = getCardsPerView();
     const maxIndex = Math.max(0, cards.length - cardsPerView);
 
     if (index > maxIndex) index = 0;
@@ -98,30 +126,34 @@ if (reviewsTrack) {
     reviewsTrack.style.transform = `translateX(-${index * cardWidth}px)`;
   }
 
-  function nextReview() {
+  function next() {
     const cardsPerView = getCardsPerView();
     const maxIndex = Math.max(0, cards.length - cardsPerView);
 
     index = index >= maxIndex ? 0 : index + 1;
-    updateReviewsSlider();
+    updateSlider();
   }
 
-  function prevReview() {
+  function prev() {
     const cardsPerView = getCardsPerView();
     const maxIndex = Math.max(0, cards.length - cardsPerView);
 
     index = index <= 0 ? maxIndex : index - 1;
-    updateReviewsSlider();
+    updateSlider();
   }
 
-  reviewsNext?.addEventListener('click', nextReview);
-  reviewsPrev?.addEventListener('click', prevReview);
-  window.addEventListener('resize', updateReviewsSlider);
+  reviewsNext?.addEventListener('click', next);
+  reviewsPrev?.addEventListener('click', prev);
 
-  updateReviewsSlider();
-  setInterval(nextReview, 9000);
+  window.addEventListener('resize', updateSlider);
+
+  updateSlider();
+  setInterval(next, 9000);
 }
 
+// =====================
+// FADE IN ANIMATION
+// =====================
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
@@ -131,12 +163,17 @@ const observer = new IntersectionObserver((entries) => {
 });
 
 document
-  .querySelectorAll('.section, .card, .gallery-grid .card')
+  .querySelectorAll(
+    '.section, .card, .gallery-grid .card, .review-card, .chef-section',
+  )
   .forEach((el) => {
     el.classList.add('fade-in');
     observer.observe(el);
   });
 
-loadGallery('galleryGrid');
+// =====================
+// INIT ALL FUNCTIONS
+// =====================
+loadGallery();
 loadFeatured();
-loadInstagramStyle();
+loadInstagram();
